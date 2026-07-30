@@ -2,8 +2,10 @@
 
 ## Source that motivated the project
 
-OpenAI. (2026, July 29). *How enabling two settings tripled our scores on the
-ARC-AGI-3 benchmark*. Research publication.
+OpenAI. (2026, July 29).
+[*How enabling two settings tripled our scores on the ARC-AGI-3
+benchmark*](https://openai.com/index/how-two-settings-tripled-our-arc-agi-3-scores/).
+Research publication.
 
 The supplied publication reports the following result on the ARC-AGI-3 public
 task set:

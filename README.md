@@ -12,14 +12,15 @@ than an otherwise equivalent agent with truncated memory.
 
 ## Research motivation
 
-OpenAI's 29 July 2026 research publication, *How enabling two settings tripled
-our scores on the ARC-AGI-3 benchmark*, reported that GPT-5.6 Sol's public-set
-score increased from 13.3% with the official harness to 38.3% when the Responses
-API harness retained reasoning and used compaction. The publication also
-reported roughly six times fewer output tokens. Its central finding was about
-the system around the model: an agent that forgot private reasoning after every
-action and eventually lost older actions had to repeatedly reconstruct what it
-had learned.
+OpenAI's 29 July 2026 research publication,
+[*How enabling two settings tripled our scores on the ARC-AGI-3
+benchmark*](https://openai.com/index/how-two-settings-tripled-our-arc-agi-3-scores/),
+reported that GPT-5.6 Sol's public-set score increased from 13.3% with the
+official harness to 38.3% when the Responses API harness retained reasoning and
+used compaction. The publication also reported roughly six times fewer output
+tokens. Its central finding was about the system around the model: an agent that
+forgot private reasoning after every action and eventually lost older actions
+had to repeatedly reconstruct what it had learned.
 
 This repository tests whether that harness finding transfers to a very
 different workflow: iterative energy-market research. It does **not** claim that
