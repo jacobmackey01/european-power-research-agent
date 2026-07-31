@@ -41,9 +41,9 @@ harness—not proof of a general law about all agents or all analytical work.
 ## Implementation sources
 
 - [OpenAI model guidance](https://developers.openai.com/api/docs/guides/latest-model)
-  recommends GPT-5.6 Sol for frontier capability, explicit reasoning effort,
-  the Responses API for tool-using workflows, and `reasoning.context="all_turns"`
-  with `previous_response_id` when prior reasoning remains relevant.
+  documents GPT-5.6 model selection, explicit reasoning effort, the Responses
+  API for tool-using workflows, and `reasoning.context="all_turns"` with
+  `previous_response_id` when prior reasoning remains relevant.
 - [Conversation state](https://developers.openai.com/api/docs/guides/conversation-state)
   documents continuation with `previous_response_id`.
 - [Compaction](https://developers.openai.com/api/docs/guides/compaction)
@@ -55,8 +55,9 @@ harness—not proof of a general law about all agents or all analytical work.
 
 ## Design boundary
 
-GPT-5.6 Sol is the controller. It may choose tools, compare returned evidence,
-revise a plan, and write a concise memo. It is not the numerical authority.
+GPT-5.6 Sol or Luna is the controller, depending on the registered experiment.
+The controller may choose tools, compare returned evidence, revise a plan, and
+write a concise memo. It is not the numerical authority.
 
 The deterministic environment owns:
 
@@ -68,6 +69,12 @@ The deterministic environment owns:
 
 This boundary reduces the opportunity for fabricated calculations while still
 testing the model's multi-step research judgment.
+
+Experiment 001 used Sol/max for the original quality-first transfer test.
+Experiment 002 retained the same ARC-AGI-3-inspired harness and `max` effort but
+changed the controller to Luna. Keeping the released suite, prompts, tools,
+evaluator, and run matrix fixed makes this a model replication within the same
+project rather than a separate project or a second hidden-set claim.
 
 ## Research questions
 

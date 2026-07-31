@@ -43,3 +43,11 @@ The client-side cost guard stops before the next paid run when the accumulated
 estimate plus its reserve would exceed the registered cap. An incomplete matrix
 cannot support the replication claim and may be resumed only against the same
 preregistration hash.
+
+## Completion
+
+The matrix is complete: 48/48 registered runs. Luna/max reproduced the primary
+retained-state advantage, while the forced-compaction quality and output-token
+claims were not supported. See the [full results and Sol comparison](results.md),
+[result manifest](result-manifest.json), [raw run records](../../outputs/experiment-002.json),
+and [paste-ready website update](website-update.md).

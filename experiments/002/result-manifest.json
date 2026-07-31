@@ -1,0 +1,67 @@
+{
+  "experiment_id": "luna-memory-replication-002",
+  "status": "complete",
+  "completed_utc": "2026-07-31T21:39:22+00:00",
+  "harness_commit": "3bd7cf3dedddc7ab497f6732fa9a0b74056aff37",
+  "preregistration_commit": "3377d04",
+  "preregistration_sha256_recorded_by_runner": "e3552149e3e79d400be9a5acef035b229781f4f4647a0a084516ebae8d553bab",
+  "released_artifacts": {
+    "episodes": {
+      "path": "private/sealed-energy-memory-001/episodes.json",
+      "sha256": "6a788a2d9e5f9d75cb5894d101bca8a34d76ecb434eae837ce47aed8f2b8678f"
+    },
+    "answers": {
+      "path": "private/sealed-energy-memory-001/answers.json",
+      "sha256": "55bc8d28751abe0049b9e91aacd05622cd27f952abc9d8688f66d1c7fdc5859c"
+    },
+    "results": {
+      "path": "outputs/experiment-002.json",
+      "published_lf_sha256": "7dcbdcca1994e0da8c2597d429b310700e3c79303022449ac13240600415342d",
+      "original_windows_checkpoint_sha256": "07799bdc21f314c5171ccaabd22371a0b02ce4446b0b535f31d5ed7cdf9aac52",
+      "note": "The JSON content is identical; Git normalizes CRLF line endings to LF for publication."
+    }
+  },
+  "run_count": 48,
+  "independent_episode_count": 8,
+  "estimated_cost_usd": 0.1565251,
+  "primary_result": {
+    "control": "stateless-truncated",
+    "treatment": "retained-reasoning",
+    "mean_score_control": 0.0,
+    "mean_score_treatment": 94.375,
+    "paired_delta": 94.375,
+    "delta_ci_95": [88.75, 98.125],
+    "two_sided_exact_sign_flip_p": 0.0078125,
+    "status": "supported"
+  },
+  "compaction_result": {
+    "activation_runs": 16,
+    "activation_run_count": 15,
+    "compaction_events": 74,
+    "score_delta_vs_retained": -0.625,
+    "score_delta_ci_95": [-16.875, 9.375],
+    "quality_noninferiority_status": "not_supported",
+    "output_token_delta_per_run": -70.8125,
+    "output_token_delta_ci_95": [-283.4375, 82.3125],
+    "output_token_reduction_status": "not_supported"
+  },
+  "cross_model_descriptive_result": {
+    "baseline_experiment_id": "sol-memory-compaction-001",
+    "sol_estimated_cost_usd": 3.753742,
+    "luna_estimated_cost_usd": 0.1565251,
+    "luna_cost_change_pct": -95.83,
+    "sol_duration_seconds": 2238.751,
+    "luna_duration_seconds": 1793.293,
+    "luna_duration_change_pct": -19.9,
+    "luna_output_token_change_pct": 1.47,
+    "status": "descriptive_only"
+  },
+  "failure_audit": {
+    "stateless_step_budget_failures": 16,
+    "stateless_duplicate_tool_calls": 63,
+    "retained_wrong_decision_labels": 3,
+    "compaction_api_500_failures": 1,
+    "selective_reruns": 0
+  },
+  "secret_scan": "No approved credential value or key-like sk- string found in the released result artifact."
+}

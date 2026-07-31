@@ -1,9 +1,9 @@
 # European Power Research Agent
 
 A benchmarkable OpenAI Responses API harness for multi-step European
-power-market research. GPT-5.6 Sol decides which analysis tool to use next;
-deterministic Python functions own the data checks, calculations, validation,
-and scoring.
+power-market research. GPT-5.6 Sol and Luna are compared as tool-choosing
+controllers; deterministic Python functions own the data checks, calculations,
+validation, and scoring.
 
 This is deliberately not a chatbot wrapped around a spreadsheet. It is an
 experiment in whether an agent that preserves its reasoning and observations
@@ -47,7 +47,7 @@ known failure mode. The agent must build an evidence chain rather than guess:
 market question
       |
       v
-GPT-5.6 Sol chooses one strict tool call
+GPT-5.6 Sol or Luna chooses one strict tool call
       |
       v
 deterministic environment returns evidence + evidence ID
@@ -116,13 +116,48 @@ compaction benefit.
 Read the [preregistration](experiments/001/README.md), [full result and claim
 boundary](experiments/001/results.md), and [raw run records](outputs/experiment-001.json).
 
-## Why GPT-5.6 Sol with `max` reasoning
+## Experiment 002: Luna replication and Sol comparison
 
-The default experiment uses `gpt-5.6-sol` with explicit
-`reasoning.effort="max"` because the purpose is to study a quality-first,
-multi-step controller that must revise hypotheses over several tool calls. That
-is different from a short schema-parsing function, where low effort is usually
-the better latency and cost baseline.
+Experiment 002 kept the same ARC-AGI-3-inspired harness, released cases,
+deterministic tools, evaluator, three conditions, and 48-run design, changing
+the controller to GPT-5.6 Luna at `max` reasoning.
+
+| Condition | Sol mean / exact | Luna mean / exact |
+|---|---:|---:|
+| `stateless-truncated` | 0.0; 0/16 | 0.0; 0/16 |
+| `retained-reasoning` | 100.0; 16/16 | 94.375; 13/16 |
+| `retained-reasoning-compaction` | 97.5; 14/16 | 93.75; 15/16 |
+
+Luna reproduced the preregistered retained-state advantage: +94.375 score
+points over its stateless baseline (95% CI [88.75, 98.125], exact sign-flip
+`p=0.0078125`). Its retained condition also used 20.9% fewer output tokens and
+was 25.3% faster than its stateless condition.
+
+Sol remained stronger in retained-mode quality. Across the complete matrices,
+Luna used 1.5% more output tokens but recorded 19.9% less API duration and an
+estimated cost of $0.156525 versus $3.753742 for Sol—about 24 times cheaper under
+the registered price snapshots. The cost advantage is a pricing result, not a
+token-efficiency result.
+
+Forced compaction again failed the registered quality-preservation and
+output-token-reduction rules. One Luna compacted run ended on an API HTTP 500
+and was retained as a zero; the other 15 were exact successes. Cross-model
+results are descriptive because the two models ran in separate time blocks on a
+suite that had already been released after Experiment 001.
+
+Read the [Luna preregistration](experiments/002/README.md), [full comparison and
+claim boundary](experiments/002/results.md), [raw Luna run
+records](outputs/experiment-002.json), and [paste-ready website
+update](experiments/002/website-update.md).
+
+## Why compare Sol and Luna with `max` reasoning
+
+Experiment 001 used `gpt-5.6-sol` with explicit `reasoning.effort="max"` to
+study a quality-first, multi-step controller that must revise hypotheses over
+several tool calls. Experiment 002 kept `max` fixed and changed only the model
+family to Luna, making the replication interpretable. That is different from a
+short schema-parsing function, where low effort is usually the better latency
+baseline.
 
 `max` is an experimental treatment, not a universal best setting. The
 evaluation protocol requires comparison with lower efforts before making a
@@ -197,7 +232,8 @@ The initial episodes are a transparent development set: their labels are in the
 repository, although expected answers are never included in model inputs. The
 Experiment 001 cases were hash-locked and unseen for their first run, then
 released with all results. They are now suitable for regression testing, not a
-second hidden-benchmark claim.
+second hidden-benchmark claim. Experiment 002 explicitly uses them in that
+released-suite role.
 
 A defensible project result requires:
 
@@ -226,10 +262,12 @@ for validation or a source of trading advice.
 
 Version `0.1.0` is an MVP research harness with deterministic development
 episodes, three API conditions, a strict tool loop, scoring, a resumable
-hash-locked experiment runner, paired inference, and offline tests. Experiment
-001 is complete and public: it supports a retained-reasoning advantage on the
-defined synthetic memory-stress set, while rejecting a compaction-efficiency
-claim at the forced 1,000-token threshold.
+hash-locked experiment runner, paired inference, and offline tests. Experiments
+001 and 002 are complete and public. Both Sol/max and Luna/max support a
+retained-reasoning advantage on the defined synthetic memory-stress set, while
+neither supports a compaction-efficiency claim at the forced 1,000-token
+threshold. Sol delivered the stronger retained-mode quality result; Luna ran
+faster and was substantially cheaper under its lower price snapshot.
 
 Real market-data connectors, a larger independently authored hidden set, and a
 production-scale long-context compaction study remain future phases.
