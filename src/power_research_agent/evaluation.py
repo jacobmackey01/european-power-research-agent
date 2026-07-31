@@ -100,12 +100,10 @@ def benchmark_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
             "exact_success_rate": round(sum(successes) / len(successes), 3),
             "input_tokens": sum(record["run"]["usage"]["input_tokens"] for record in mode_records),
             "cached_input_tokens": sum(
-                record["run"]["usage"].get("cached_input_tokens", 0)
-                for record in mode_records
+                record["run"]["usage"].get("cached_input_tokens", 0) for record in mode_records
             ),
             "cache_write_tokens": sum(
-                record["run"]["usage"].get("cache_write_tokens", 0)
-                for record in mode_records
+                record["run"]["usage"].get("cache_write_tokens", 0) for record in mode_records
             ),
             "output_tokens": sum(
                 record["run"]["usage"]["output_tokens"] for record in mode_records
@@ -139,9 +137,7 @@ def estimate_cost_usd(run: dict[str, Any], pricing: dict[str, float]) -> float:
     cost = (
         uncached_tokens * pricing["input_per_million"]
         + cached_tokens * pricing["cached_input_per_million"]
-        + cache_write_tokens * pricing.get(
-            "cache_write_per_million", pricing["input_per_million"]
-        )
+        + cache_write_tokens * pricing.get("cache_write_per_million", pricing["input_per_million"])
         + output_tokens * pricing["output_per_million"]
     ) / 1_000_000
     return round(cost, 8)
@@ -200,13 +196,9 @@ def paired_comparisons(
             "exact_success": lambda record: float(bool(record["score"]["exact_success"])),
             "input_tokens": lambda record: float(record["run"]["usage"]["input_tokens"]),
             "output_tokens": lambda record: float(record["run"]["usage"]["output_tokens"]),
-            "reasoning_tokens": lambda record: float(
-                record["run"]["usage"]["reasoning_tokens"]
-            ),
+            "reasoning_tokens": lambda record: float(record["run"]["usage"]["reasoning_tokens"]),
             "duration_seconds": lambda record: float(record["run"]["duration_seconds"]),
-            "estimated_cost_usd": lambda record: float(
-                record.get("estimated_cost_usd", 0.0)
-            ),
+            "estimated_cost_usd": lambda record: float(record.get("estimated_cost_usd", 0.0)),
         }
         comparison["metrics"] = {
             metric: _paired_metric(
@@ -225,16 +217,14 @@ def paired_comparisons(
         ]
         if compaction_runs:
             activated = sum(
-                record["run"].get("compaction_events", 0) > 0
-                for record in compaction_runs
+                record["run"].get("compaction_events", 0) > 0 for record in compaction_runs
             )
             comparison["compaction_activation"] = {
                 "runs_with_compaction": activated,
                 "runs": len(compaction_runs),
                 "rate": round(activated / len(compaction_runs), 6),
                 "events": sum(
-                    int(record["run"].get("compaction_events", 0))
-                    for record in compaction_runs
+                    int(record["run"].get("compaction_events", 0)) for record in compaction_runs
                 ),
             }
         results[name] = comparison
@@ -265,9 +255,7 @@ def _paired_metric(
     treatment_values = [treatment for _, treatment in clusters]
     deltas = [treatment - control for control, treatment in clusters]
     rng = random.Random(bootstrap_seed)
-    bootstrapped = [
-        mean(rng.choice(deltas) for _ in deltas) for _ in range(bootstrap_iterations)
-    ]
+    bootstrapped = [mean(rng.choice(deltas) for _ in deltas) for _ in range(bootstrap_iterations)]
     control_mean = mean(control_values)
     treatment_mean = mean(treatment_values)
     delta = mean(deltas)

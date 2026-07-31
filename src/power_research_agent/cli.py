@@ -176,7 +176,6 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(payload["summary"], indent=2, sort_keys=True))
         return 0
 
-
     if args.command == "experiment":
         payload = run_preregistered_experiment(
             preregistration_path=args.preregistration,

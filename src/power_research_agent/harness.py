@@ -236,9 +236,7 @@ def _function_calls(response: Any) -> list[dict[str, str]]:
 
 
 def _output_item_count(response: Any, item_type: str) -> int:
-    return sum(
-        _field(item, "type") == item_type for item in (_field(response, "output", []) or [])
-    )
+    return sum(_field(item, "type") == item_type for item in (_field(response, "output", []) or []))
 
 
 def _accumulate_usage(totals: UsageTotals, usage: Any) -> None:

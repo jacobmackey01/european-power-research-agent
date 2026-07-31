@@ -159,9 +159,7 @@ def build_jobs(
     ]
 
 
-def assess_claims(
-    comparisons: dict[str, Any], claim_rules: list[dict[str, Any]]
-) -> dict[str, Any]:
+def assess_claims(comparisons: dict[str, Any], claim_rules: list[dict[str, Any]]) -> dict[str, Any]:
     """Apply preregistered superiority/non-inferiority rules mechanically."""
 
     assessed: dict[str, Any] = {}
@@ -242,9 +240,7 @@ def _refresh_analysis(payload: dict[str, Any], manifest: dict[str, Any]) -> None
     specs = _object_list(manifest.get("comparisons"), "comparisons")
     repetitions = int(manifest["run_matrix"]["repetitions"])
     episode_count = int(manifest["artifacts"]["episode_count"])
-    normalized_specs = [
-        {**spec, "expected_pairs": episode_count * repetitions} for spec in specs
-    ]
+    normalized_specs = [{**spec, "expected_pairs": episode_count * repetitions} for spec in specs]
     payload["comparisons"] = paired_comparisons(
         records,
         normalized_specs,
