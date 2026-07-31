@@ -1,0 +1,427 @@
+{
+  "suite_id": "sealed-energy-memory-001",
+  "episodes": [
+    {
+      "episode_id": "forecast-vintage-leakage",
+      "title": "Final forecast vintages used before they existed",
+      "question": "Does the apparent wind-forecast-surprise edge justify production use, or must the research dataset be repaired first?",
+      "briefing": "The strategy acts at 07:00 UTC using a vendor forecast. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H001-META",
+          "market": "DE-LU day-ahead wind forecast error",
+          "decision_time_utc": "07:00",
+          "research_field": "vendor_wind_forecast",
+          "archive_field": "latest_available_value",
+          "first_operational_release_utc": "06:30",
+          "final_revision_cutoff_utc": "12:00",
+          "interpretation": "The archive can contain revisions published after the trading decision."
+        },
+        "run_data_quality_checks": {
+          "status": "failed",
+          "evidence_id": "H001-QUALITY",
+          "rows_revised_after_decision_pct": 18.7,
+          "median_absolute_revision_mw": 612.0,
+          "revision_correlation_with_realized_error": 0.88,
+          "as_issued_snapshot_available": true,
+          "deterministic_verdict": "The feature uses final forecast vintages that were unavailable at decision time, creating target-adjacent leakage."
+        },
+        "run_walk_forward_validation": {
+          "status": "failed_after_correction",
+          "evidence_id": "H001-WF",
+          "archived_final_vintage_net_value_change_pct": 4.8,
+          "as_issued_vintage_net_value_change_pct": -0.2,
+          "recent_as_issued_holdout_pct": 0.1,
+          "fold_count": 8,
+          "deterministic_verdict": "The apparent uplift disappears when each row uses the forecast vintage available at the decision time."
+        },
+        "run_statistical_inference": {
+          "status": "not_significant_after_correction",
+          "evidence_id": "H001-INF",
+          "estimator": "Newey-West HAC differential on as-issued vintages",
+          "mean_net_value_change_pct": -0.2,
+          "confidence_interval_95_pct": [-0.7, 0.8],
+          "p_value": 0.74,
+          "deterministic_verdict": "Corrected data do not establish a reliable positive effect."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H001-STRESS",
+          "thirty_minute_release_delay_pct": -0.5,
+          "double_transaction_cost_pct": -0.6,
+          "high_revision_days_pct": -1.1,
+          "deterministic_verdict": "Operational timing and cost stresses make the corrected result negative."
+        }
+      }
+    },
+    {
+      "episode_id": "cross-market-timezone-misalignment",
+      "title": "UTC load joined to local-time prices",
+      "question": "Is the cross-market load-price signal robust, or is a timestamp alignment defect driving the apparent relationship?",
+      "briefing": "A GB load series and a German price series were joined on timestamp strings. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H002-META",
+          "left_market": "Great Britain demand",
+          "left_timezone": "UTC",
+          "right_market": "DE-LU day-ahead price",
+          "right_timezone": "Europe/Berlin",
+          "join_key": "timezone-naive timestamp string",
+          "interpretation": "The same clock label refers to different instants for most of the year."
+        },
+        "run_data_quality_checks": {
+          "status": "failed",
+          "evidence_id": "H002-QUALITY",
+          "rows_joined_without_offset_pct": 100.0,
+          "best_cross_correlation_lag_hours_winter": 1,
+          "best_cross_correlation_lag_hours_summer": 2,
+          "dst_boundary_discontinuities": 4,
+          "deterministic_verdict": "The join confuses UTC with local civil time and changes lag at daylight-saving boundaries."
+        },
+        "run_walk_forward_validation": {
+          "status": "failed_after_correction",
+          "evidence_id": "H002-WF",
+          "naive_join_net_value_change_pct": 3.1,
+          "utc_aligned_net_value_change_pct": 0.2,
+          "recent_utc_aligned_holdout_pct": -0.1,
+          "fold_count": 7,
+          "deterministic_verdict": "Most apparent value vanishes after both feeds are normalized to UTC before joining."
+        },
+        "run_statistical_inference": {
+          "status": "not_significant_after_correction",
+          "evidence_id": "H002-INF",
+          "mean_net_value_change_pct": 0.2,
+          "confidence_interval_95_pct": [-0.4, 0.7],
+          "p_value": 0.58,
+          "deterministic_verdict": "The corrected interval includes zero."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H002-STRESS",
+          "dst_transition_weeks_pct": -1.3,
+          "double_cost_pct": -0.4,
+          "one_hour_execution_delay_pct": -0.6,
+          "deterministic_verdict": "The strategy is especially fragile exactly where the timestamp defect changes."
+        }
+      }
+    },
+    {
+      "episode_id": "bidding-zone-structural-break",
+      "title": "A relationship that ends after a bidding-zone split",
+      "question": "Does the historical congestion predictor support a current Austrian power-market recommendation?",
+      "briefing": "The sample spans the 2018 separation of the German-Austrian bidding zone. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H003-META",
+          "target": "Austria day-ahead spread",
+          "sample_start": "2015-01-01",
+          "sample_end": "2026-06-30",
+          "market_design_event": "DE-AT bidding-zone split on 2018-10-01",
+          "pooled_model": true,
+          "interpretation": "A known market-design change sits inside the estimation sample."
+        },
+        "run_data_quality_checks": {
+          "status": "passed_with_break_warning",
+          "evidence_id": "H003-QUALITY",
+          "duplicate_timestamps": 0,
+          "missing_target_pct": 0.02,
+          "unit_check": "pass",
+          "leakage_check": "pass",
+          "break_test_date": "2018-10-01",
+          "break_test_p_value": 0.002,
+          "deterministic_verdict": "Rows are technically clean, but the target process has a material structural break at the zone split."
+        },
+        "run_walk_forward_validation": {
+          "status": "regime_failure",
+          "evidence_id": "H003-WF",
+          "pre_split_net_value_change_pct": 2.4,
+          "post_split_net_value_change_pct": -0.8,
+          "latest_three_folds_pct": [-1.1, -0.4, -0.9],
+          "pooled_net_value_change_pct": 0.5,
+          "deterministic_verdict": "A pooled gain is carried by an obsolete pre-split regime and reverses in every recent fold."
+        },
+        "run_statistical_inference": {
+          "status": "heterogeneous",
+          "evidence_id": "H003-INF",
+          "post_split_mean_pct": -0.8,
+          "post_split_confidence_interval_95_pct": [-1.4, -0.1],
+          "regime_interaction_p_value": 0.01,
+          "deterministic_verdict": "The post-split effect is negative and statistically different from the pre-split effect."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H003-STRESS",
+          "current_capacity_regime_pct": -1.1,
+          "high_renewables_pct": -0.7,
+          "double_cost_pct": -1.0,
+          "deterministic_verdict": "Current-market and cost stresses do not recover the obsolete relationship."
+        }
+      }
+    },
+    {
+      "episode_id": "outage-reporting-selection-bias",
+      "title": "Missing outage notices during scarcity events",
+      "question": "Does the outage-news feature provide a robust Nordic balancing-market edge?",
+      "briefing": "The research table includes only intervals with successfully parsed outage notices. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H004-META",
+          "market": "Nordic balancing energy",
+          "feature_source": "operator outage notices",
+          "row_policy": "drop interval when notice parser returns no record",
+          "target": "next-hour imbalance spread",
+          "interpretation": "Parser coverage determines which target intervals remain in the research sample."
+        },
+        "run_data_quality_checks": {
+          "status": "failed",
+          "evidence_id": "H004-QUALITY",
+          "overall_dropped_interval_pct": 12.4,
+          "dropped_interval_pct_top_scarcity_decile": 37.8,
+          "dropped_interval_pct_other_deciles": 9.6,
+          "missingness_scarcity_test_p_value": 0.001,
+          "deterministic_verdict": "Missing notice rows are not random; coverage is worst during the scarcity outcomes the strategy targets."
+        },
+        "run_walk_forward_validation": {
+          "status": "failed_after_selection_adjustment",
+          "evidence_id": "H004-WF",
+          "complete_case_net_value_change_pct": 3.2,
+          "inverse_probability_weighted_pct": -0.1,
+          "parser_failure_as_no_notice_pct": -0.4,
+          "fold_count": 9,
+          "deterministic_verdict": "The complete-case uplift disappears under two prespecified treatments of coverage failure."
+        },
+        "run_statistical_inference": {
+          "status": "not_significant_after_adjustment",
+          "evidence_id": "H004-INF",
+          "adjusted_mean_pct": -0.1,
+          "confidence_interval_95_pct": [-0.9, 0.6],
+          "p_value": 0.79,
+          "deterministic_verdict": "Selection-adjusted inference does not establish an edge."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H004-STRESS",
+          "top_scarcity_decile_pct": -1.4,
+          "parser_latency_stress_pct": -0.8,
+          "double_cost_pct": -0.5,
+          "deterministic_verdict": "Performance is negative in the high-value scarcity regime and under plausible operations."
+        }
+      }
+    },
+    {
+      "episode_id": "reserve-volume-unit-shift",
+      "title": "Reserve activation values switch from MW to GW",
+      "question": "Is the reserve-volume discontinuity a real market shift that can drive a strategy, or does the dataset require repair?",
+      "briefing": "The feature name and database schema say MW throughout. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H005-META",
+          "market": "German aFRR activation",
+          "field": "activated_volume_mw",
+          "schema_unit": "MW",
+          "source_api_version_change": "2025-04-01T00:00:00Z",
+          "operator_methodology_change": "none",
+          "interpretation": "A source version change coincides exactly with the numeric discontinuity."
+        },
+        "run_data_quality_checks": {
+          "status": "failed",
+          "evidence_id": "H005-QUALITY",
+          "median_before": 742.0,
+          "median_after": 0.751,
+          "after_to_before_ratio": 0.001012,
+          "correlation_after_multiply_1000_with_parallel_feed": 0.98,
+          "deterministic_verdict": "The new API emits GW while the stored field remains labelled MW; the affected segment needs a 1,000-fold conversion."
+        },
+        "run_walk_forward_validation": {
+          "status": "failed_after_correction",
+          "evidence_id": "H005-WF",
+          "uncorrected_feature_net_value_change_pct": 5.6,
+          "unit_corrected_net_value_change_pct": 0.3,
+          "recent_corrected_holdout_pct": 0.0,
+          "fold_count": 6,
+          "deterministic_verdict": "The apparent strategy value is largely the model exploiting the scale boundary."
+        },
+        "run_statistical_inference": {
+          "status": "not_significant_after_correction",
+          "evidence_id": "H005-INF",
+          "corrected_mean_pct": 0.3,
+          "confidence_interval_95_pct": [-0.5, 0.9],
+          "p_value": 0.49,
+          "deterministic_verdict": "The corrected feature does not establish a reliable positive effect."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H005-STRESS",
+          "unit_corrected_double_cost_pct": -0.2,
+          "post_api_change_only_pct": -0.1,
+          "high_activation_days_pct": 0.1,
+          "deterministic_verdict": "No plausible corrected stress recovers the uncorrected uplift."
+        }
+      }
+    },
+    {
+      "episode_id": "negative-price-curtailment-regime",
+      "title": "Solar residual signal reverses in curtailment regimes",
+      "question": "Does the solar-residual feature support a robust day-ahead trading recommendation after temporal, statistical, and cost checks?",
+      "briefing": "Basic preprocessing is complete, but the candidate may behave differently during negative-price curtailment. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H006-META",
+          "market": "Netherlands day-ahead power",
+          "candidate": "solar forecast residual interaction",
+          "baseline": "price and calendar model",
+          "decision_metric": "net value after spread and imbalance costs",
+          "noted_regime": "negative-price curtailment hours"
+        },
+        "run_data_quality_checks": {
+          "status": "passed",
+          "evidence_id": "H006-QUALITY",
+          "duplicate_timestamps": 0,
+          "missing_target_pct": 0.0,
+          "future_feature_leakage": 0,
+          "unit_check": "pass",
+          "release_lag_check": "pass",
+          "deterministic_verdict": "The dataset passes the prespecified integrity checks."
+        },
+        "run_walk_forward_validation": {
+          "status": "mixed",
+          "evidence_id": "H006-WF",
+          "normal_price_hours_pct": 1.1,
+          "negative_price_hours_pct": -0.9,
+          "pooled_net_value_change_pct": 0.12,
+          "fold_results_pct": [0.8, -0.5, 0.6, -0.4, 0.1, 0.0],
+          "deterministic_verdict": "Small pooled value hides a reversal in the curtailment regime and instability across folds."
+        },
+        "run_statistical_inference": {
+          "status": "not_significant",
+          "evidence_id": "H006-INF",
+          "mean_net_value_change_pct": 0.12,
+          "confidence_interval_95_pct": [-0.35, 0.58],
+          "p_value": 0.62,
+          "regime_interaction_p_value": 0.03,
+          "deterministic_verdict": "The pooled effect is uncertain and differs materially by curtailment regime."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H006-STRESS",
+          "double_cost_pct": -0.31,
+          "negative_price_cluster_pct": -1.2,
+          "forecast_revision_stress_pct": -0.27,
+          "deterministic_verdict": "Plausible cost and curtailment stresses turn the small pooled result negative."
+        }
+      }
+    },
+    {
+      "episode_id": "imbalance-dst-duplicate",
+      "title": "The repeated autumn hour inflates an imbalance feature",
+      "question": "Can the local-time imbalance panel be used unchanged for the proposed intraday strategy?",
+      "briefing": "The panel contains several autumn clock changes and is keyed by naive local hour. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H007-META",
+          "market": "Belgian imbalance price",
+          "source_timezone": "Europe/Brussels",
+          "stored_timestamp": "naive local datetime",
+          "sample_years": "2019-2026",
+          "daily_feature_key": "date plus local hour",
+          "interpretation": "Every autumn transition contains two distinct delivery periods labelled 02:00."
+        },
+        "run_data_quality_checks": {
+          "status": "failed",
+          "evidence_id": "H007-QUALITY",
+          "duplicate_naive_local_keys": 7,
+          "duplicate_key_month": "October",
+          "missing_utc_intervals": 0,
+          "offsets_in_duplicate_pairs": ["+02:00", "+01:00"],
+          "deterministic_verdict": "Naive local time is not a unique delivery-period key; retain offsets or normalize to UTC."
+        },
+        "run_walk_forward_validation": {
+          "status": "failed_after_correction",
+          "evidence_id": "H007-WF",
+          "naive_panel_net_value_change_pct": 2.2,
+          "utc_keyed_net_value_change_pct": -0.1,
+          "latest_utc_keyed_holdout_pct": -0.3,
+          "fold_count": 7,
+          "deterministic_verdict": "The apparent uplift disappears when repeated local hours are represented as distinct UTC intervals."
+        },
+        "run_statistical_inference": {
+          "status": "not_significant_after_correction",
+          "evidence_id": "H007-INF",
+          "utc_keyed_mean_pct": -0.1,
+          "confidence_interval_95_pct": [-0.8, 0.5],
+          "p_value": 0.71,
+          "deterministic_verdict": "The corrected panel provides no reliable positive effect."
+        },
+        "run_strategy_stress_test": {
+          "status": "failed",
+          "evidence_id": "H007-STRESS",
+          "dst_transition_weeks_pct": -1.6,
+          "double_cost_pct": -0.4,
+          "high_imbalance_volatility_pct": -0.7,
+          "deterministic_verdict": "The strategy fails in the transition periods that created the original artefact."
+        }
+      }
+    },
+    {
+      "episode_id": "thin-holdout-provisional-signal",
+      "title": "Promising cross-border signal with too little prospective evidence",
+      "question": "Should the cross-border-flow anomaly be rejected, deployed, or retained only as a provisional research signal?",
+      "briefing": "The feature was defined before the latest holdout, but only a short post-change sample is available. An audit-ready decision must cover provenance, data integrity, chronological validation, uncertainty, and cost or regime stress. Complete all five audit gates before submitting the memo.",
+      "tool_payloads": {
+        "inspect_market_context": {
+          "status": "ok",
+          "evidence_id": "H008-META",
+          "market": "France-Germany day-ahead spread",
+          "candidate": "unexpected cross-border-flow constraint",
+          "feature_definition_frozen_utc": "2026-01-01T00:00:00Z",
+          "prospective_holdout_end_utc": "2026-06-30T23:00:00Z",
+          "decision_metric": "net value after execution costs"
+        },
+        "run_data_quality_checks": {
+          "status": "passed",
+          "evidence_id": "H008-QUALITY",
+          "duplicate_timestamps": 0,
+          "missing_target_pct": 0.03,
+          "future_feature_leakage": 0,
+          "unit_check": "pass",
+          "release_lag_check": "pass",
+          "deterministic_verdict": "No prespecified integrity or leakage failure was found."
+        },
+        "run_walk_forward_validation": {
+          "status": "promising_but_thin",
+          "evidence_id": "H008-WF",
+          "development_fold_net_value_change_pct": [0.4, 0.7, -0.1, 0.5],
+          "prospective_holdout_monthly_pct": [1.8, 1.1],
+          "prospective_holdout_months": 2,
+          "prospective_event_count": 19,
+          "deterministic_verdict": "The frozen feature is positive prospectively, but the holdout contains only two months and 19 events."
+        },
+        "run_statistical_inference": {
+          "status": "underpowered",
+          "evidence_id": "H008-INF",
+          "prospective_mean_pct": 1.45,
+          "confidence_interval_95_pct": [-0.2, 2.5],
+          "minimum_detectable_effect_pct": 1.9,
+          "p_value": 0.09,
+          "deterministic_verdict": "The direction is promising, but the current interval includes zero and the study is underpowered."
+        },
+        "run_strategy_stress_test": {
+          "status": "mixed",
+          "evidence_id": "H008-STRESS",
+          "base_cost_pct": 1.1,
+          "double_cost_pct": 0.4,
+          "single_interconnector_outage_pct": -0.3,
+          "high_volatility_pct": 0.6,
+          "deterministic_verdict": "The signal survives higher costs but not the limited outage scenario; more prospective regimes are required."
+        }
+      }
+    }
+  ]
+}

@@ -81,13 +81,16 @@ def test_fabricated_citation_loses_validity_points() -> None:
 
 def test_missing_report_scores_zero() -> None:
     episode = get_episode("dst-transition-duplicate")
+    environment = ResearchEnvironment(episode)
+    environment.execute("inspect_market_context", {})
+    environment.execute("inspect_market_context", {})
     run = RunResult(
         episode_id=episode.episode_id,
         mode="stateless-truncated",
         model="gpt-5.6-sol",
         reasoning_effort="max",
         report=None,
-        tool_events=[],
+        tool_events=environment.events,
         usage=UsageTotals(),
         errors=["Maximum step budget reached."],
     )
@@ -96,6 +99,8 @@ def test_missing_report_scores_zero() -> None:
 
     assert score.total == 0.0
     assert score.exact_success is False
+    assert score.diagnostics["duplicate_calls"] == 1
+    assert score.diagnostics["observed_evidence_ids"] == ["E-DST-META"]
 
 
 def test_benchmark_summary_groups_conditions() -> None:

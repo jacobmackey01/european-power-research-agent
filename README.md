@@ -87,6 +87,35 @@ observations. The other conditions use the Responses API's native continuation.
 This lets the project isolate the value of memory and compaction while holding
 the model, prompt, tools, episodes, and evaluator constant.
 
+## Experiment 001 result
+
+The preregistered 31 July 2026 experiment ran eight sealed synthetic episodes,
+twice per condition, with GPT-5.6 Sol at `max` reasoning: 48 runs in total.
+
+| Condition | Mean score | Exact success | Estimated cost |
+|---|---:|---:|---:|
+| `stateless-truncated` | 0.0 / 100 | 0 / 16 | $1.5706 |
+| `retained-reasoning` | 100.0 / 100 | 16 / 16 | $0.9127 |
+| `retained-reasoning-compaction` | 97.5 / 100 | 14 / 16 | $1.2704 |
+
+Retained reasoning improved the primary composite score by 100 points versus
+the stateless rolling-history baseline (episode-clustered 95% CI [100, 100],
+exact two-sided sign-flip `p=0.0078125`). It also used 35.2% fewer output tokens
+and cost 41.9% less. Every stateless run exhausted the fixed eight-step budget
+after losing and reconstructing older evidence; the raw logs contain 61 repeated
+tool calls.
+
+The forced 1,000-token compaction condition activated in all 16 runs, but its
+separate hypothesis was **not** supported. It missed the preregistered five-point
+non-inferiority margin, achieved 14/16 rather than 16/16 exact successes, used
+8.0% more output tokens, cost 39.2% more, and took 198.6% longer than retained
+reasoning without compaction. The combined harness still beat the stateless
+baseline, but this experiment attributes that result to retention—not a measured
+compaction benefit.
+
+Read the [preregistration](experiments/001/README.md), [full result and claim
+boundary](experiments/001/results.md), and [raw run records](outputs/experiment-001.json).
+
 ## Why GPT-5.6 Sol with `max` reasoning
 
 The default experiment uses `gpt-5.6-sol` with explicit
@@ -134,9 +163,9 @@ power-research-agent evaluate `
 ```
 
 For the one-time unseen evaluation, model-visible cases and the evaluator-only
-answer key are stored separately and kept out of Git until the run is frozen.
-The public preregistration contains only their hashes. The runner verifies those
-hashes before the first paid call and checkpoints every randomized run:
+answer key were stored separately and kept out of Git until the run was frozen.
+The preregistration initially contained only their hashes. The runner verified
+those hashes before the first paid call and checkpointed every randomized run:
 
 ```powershell
 power-research-agent verify-suite `
@@ -151,9 +180,10 @@ power-research-agent experiment `
   --output outputs/experiment-001.json
 ```
 
-The answer key and API key are both ignored. They are different controls: the
-answer key prevents evaluation leakage; the API key remains only in the process
-environment and is never written to a result file.
+The answer key was released only after result freezing, so the suite is now a
+public regression set and cannot be called unseen in a future experiment. The
+API key remains ignored, stays only in the process environment, and never appears
+in the result file.
 
 Local, deterministic tests make no API calls:
 
@@ -163,17 +193,18 @@ pytest
 
 ## Evaluation discipline
 
-The current episodes are a transparent development set: their labels are in the
-repository, although expected answers are never included in model inputs. They
-are suitable for code validation and early harness comparison, not a final
-unseen benchmark.
+The initial episodes are a transparent development set: their labels are in the
+repository, although expected answers are never included in model inputs. The
+Experiment 001 cases were hash-locked and unseen for their first run, then
+released with all results. They are now suitable for regression testing, not a
+second hidden-benchmark claim.
 
 A defensible project result requires:
 
 1. freezing the prompt, tools, scoring rule, model snapshot, and run budget;
 2. creating a separate hidden episode set whose labels are withheld from model
    inputs and experiment-time code changes;
-3. running multiple seeds per condition;
+3. running repeated draws per condition in a frozen randomized order;
 4. reporting task score, failure modes, input/output/reasoning tokens, latency,
    and estimated cost rather than selecting a single favourable run;
 5. preserving raw response IDs and tool-event logs without storing secrets.
@@ -194,11 +225,11 @@ for validation or a source of trading advice.
 ## Status
 
 Version `0.1.0` is an MVP research harness with deterministic development
-episodes, three API conditions, a strict tool loop, scoring, a CLI, and offline
-tests. A bounded 30 July 2026 live smoke test also confirmed that GPT-5.6 Sol
-accepted the retained-reasoning plus compaction request and completed the unit
-scale episode without tool or citation errors. It used low reasoning solely as
-an API compatibility check; it is not a harness-comparison result.
+episodes, three API conditions, a strict tool loop, scoring, a resumable
+hash-locked experiment runner, paired inference, and offline tests. Experiment
+001 is complete and public: it supports a retained-reasoning advantage on the
+defined synthetic memory-stress set, while rejecting a compaction-efficiency
+claim at the forced 1,000-token threshold.
 
-Real market-data connectors, repeated condition runs, and a sealed hidden
-benchmark are deliberate next phases.
+Real market-data connectors, a larger independently authored hidden set, and a
+production-scale long-context compaction study remain future phases.

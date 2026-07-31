@@ -13,6 +13,14 @@ from power_research_agent.models import EpisodeSpec, RunResult, RunScore
 def score_run(run: RunResult, episode: EpisodeSpec) -> RunScore:
     """Score a completed run without invoking a model."""
 
+    observed = {
+        evidence_id
+        for event in run.tool_events
+        if event.tool_name in ANALYSIS_TOOLS
+        for evidence_id in _evidence_ids(event.result)
+    }
+    duplicate_calls = sum(event.duplicate for event in run.tool_events)
+    invalid_calls = sum(event.result.get("status") == "error" for event in run.tool_events)
     if run.report is None:
         return RunScore(
             episode_id=episode.episode_id,
@@ -29,22 +37,16 @@ def score_run(run: RunResult, episode: EpisodeSpec) -> RunScore:
                 "reason": "No research memo submitted.",
                 "errors": list(run.errors),
                 "tool_calls": len(run.tool_events),
+                "duplicate_calls": duplicate_calls,
+                "invalid_calls": invalid_calls,
+                "observed_evidence_ids": sorted(observed),
             },
         )
 
-    observed = {
-        evidence_id
-        for event in run.tool_events
-        if event.tool_name in ANALYSIS_TOOLS
-        for evidence_id in _evidence_ids(event.result)
-    }
     submitted = set(run.report.evidence_ids)
     required = set(episode.required_evidence_ids)
     unsupported = sorted(submitted - observed)
     missing_required = sorted(required - submitted)
-    duplicate_calls = sum(event.duplicate for event in run.tool_events)
-    invalid_calls = sum(event.result.get("status") == "error" for event in run.tool_events)
-
     decision = 30.0 if run.report.conclusion == episode.correct_conclusion else 0.0
     diagnosis = 25.0 if run.report.root_cause == episode.correct_root_cause else 0.0
     required_evidence = (

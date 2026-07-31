@@ -40,5 +40,10 @@ frozen, both files and every successful or failed run will be disclosed. That
 makes this a one-time unseen evaluation: the released cases become public test
 fixtures and cannot be called hidden in a later experiment.
 
-No result exists in this document. Claims will be derived mechanically from the
-registered rules and published whether favourable, null, or negative.
+No result existed when this preregistration was committed. The 48-run matrix is
+now complete. See [`results.md`](results.md) for the frozen outcome and
+[`../../outputs/experiment-001.json`](../../outputs/experiment-001.json) for all
+run records.
+
+The primary retention claim was supported. The forced-compaction
+quality-preservation and token-reduction claims were not supported.

@@ -1,0 +1,61 @@
+{
+  "suite_id": "sealed-energy-memory-001",
+  "answers": [
+    {
+      "episode_id": "forecast-vintage-leakage",
+      "correct_conclusion": "repair_required",
+      "correct_root_cause": "forecast_vintage_leakage",
+      "required_evidence_ids": ["H001-META", "H001-QUALITY", "H001-WF", "H001-INF", "H001-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "cross-market-timezone-misalignment",
+      "correct_conclusion": "repair_required",
+      "correct_root_cause": "timezone_alignment_error",
+      "required_evidence_ids": ["H002-META", "H002-QUALITY", "H002-WF", "H002-INF", "H002-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "bidding-zone-structural-break",
+      "correct_conclusion": "no_robust_edge",
+      "correct_root_cause": "structural_break",
+      "required_evidence_ids": ["H003-META", "H003-QUALITY", "H003-WF", "H003-INF", "H003-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "outage-reporting-selection-bias",
+      "correct_conclusion": "no_robust_edge",
+      "correct_root_cause": "missing_not_at_random_outages",
+      "required_evidence_ids": ["H004-META", "H004-QUALITY", "H004-WF", "H004-INF", "H004-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "reserve-volume-unit-shift",
+      "correct_conclusion": "repair_required",
+      "correct_root_cause": "unit_scale_shift_gw_as_mw",
+      "required_evidence_ids": ["H005-META", "H005-QUALITY", "H005-WF", "H005-INF", "H005-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "negative-price-curtailment-regime",
+      "correct_conclusion": "no_robust_edge",
+      "correct_root_cause": "regime_dependent_signal",
+      "required_evidence_ids": ["H006-META", "H006-QUALITY", "H006-WF", "H006-INF", "H006-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "imbalance-dst-duplicate",
+      "correct_conclusion": "repair_required",
+      "correct_root_cause": "dst_duplicate_local_hour",
+      "required_evidence_ids": ["H007-META", "H007-QUALITY", "H007-WF", "H007-INF", "H007-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    },
+    {
+      "episode_id": "thin-holdout-provisional-signal",
+      "correct_conclusion": "provisional_signal",
+      "correct_root_cause": "insufficient_evidence",
+      "required_evidence_ids": ["H008-META", "H008-QUALITY", "H008-WF", "H008-INF", "H008-STRESS"],
+      "required_tools": ["inspect_market_context", "run_data_quality_checks", "run_walk_forward_validation", "run_statistical_inference", "run_strategy_stress_test"]
+    }
+  ]
+}

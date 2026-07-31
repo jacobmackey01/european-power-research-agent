@@ -1,0 +1,48 @@
+{
+  "experiment_id": "sol-memory-compaction-001",
+  "status": "complete",
+  "completed_utc": "2026-07-31T13:12:13+00:00",
+  "harness_commit": "a1f00459122158583ee9aad945d39cc5f0b59e4d",
+  "preregistration_commit": "51b4756",
+  "preregistration_sha256_recorded_by_runner": "c431a0c1c0a2c7e8e39b1d7c940fd445f33b5ae7c476935637da0aaf99e6d005",
+  "released_artifacts": {
+    "episodes": {
+      "path": "private/sealed-energy-memory-001/episodes.json",
+      "sha256": "6a788a2d9e5f9d75cb5894d101bca8a34d76ecb434eae837ce47aed8f2b8678f"
+    },
+    "answers": {
+      "path": "private/sealed-energy-memory-001/answers.json",
+      "sha256": "55bc8d28751abe0049b9e91aacd05622cd27f952abc9d8688f66d1c7fdc5859c"
+    },
+    "results": {
+      "path": "outputs/experiment-001.json",
+      "published_lf_sha256": "621d8d557f7bc3493670a2d90b5132147f0258ee40aeb171ef002a792366d50a",
+      "original_windows_checkpoint_sha256": "ba1e705e78939a40fd7be38b853d9084149e18920a53d1b125125c164c4b5a32",
+      "note": "The JSON content is identical; Git normalizes CRLF line endings to LF for publication."
+    }
+  },
+  "run_count": 48,
+  "independent_episode_count": 8,
+  "estimated_cost_usd": 3.753741,
+  "primary_result": {
+    "control": "stateless-truncated",
+    "treatment": "retained-reasoning",
+    "mean_score_control": 0.0,
+    "mean_score_treatment": 100.0,
+    "paired_delta": 100.0,
+    "delta_ci_95": [100.0, 100.0],
+    "two_sided_exact_sign_flip_p": 0.0078125,
+    "status": "supported"
+  },
+  "compaction_result": {
+    "activation_runs": 16,
+    "activation_run_count": 16,
+    "compaction_events": 62,
+    "score_delta_vs_retained": -2.5,
+    "score_delta_ci_95": [-6.875, 0.0],
+    "quality_noninferiority_status": "not_supported",
+    "output_token_delta_per_run": 82.9375,
+    "output_token_reduction_status": "not_supported"
+  },
+  "secret_scan": "No credential value or key-like sk- string found in released artifacts."
+}
