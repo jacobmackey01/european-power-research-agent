@@ -7,9 +7,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from power_research_agent.benchmark import load_sealed_suite
 from power_research_agent.environment import ResearchEnvironment
 from power_research_agent.episodes import get_episode, list_episodes
 from power_research_agent.evaluation import benchmark_summary, score_run
+from power_research_agent.experiment import run_preregistered_experiment
 from power_research_agent.harness import HarnessConfig, ResponsesHarness
 from power_research_agent.models import HarnessMode
 
@@ -52,7 +54,27 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["all", *[mode.value for mode in HarnessMode]],
     )
     eval_parser.add_argument("--output", type=Path, required=True)
+
+    verify_parser = subparsers.add_parser(
+        "verify-suite",
+        help="Verify a sealed suite and preregistered hashes without making API calls.",
+    )
+    _add_sealed_suite_args(verify_parser)
+
+    experiment_parser = subparsers.add_parser(
+        "experiment",
+        help="Run or resume a hash-locked paid experiment from its preregistration.",
+    )
+    _add_sealed_suite_args(experiment_parser)
+    experiment_parser.add_argument("--output", type=Path, required=True)
+    experiment_parser.add_argument("--resume", action="store_true")
     return parser
+
+
+def _add_sealed_suite_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--preregistration", type=Path, required=True)
+    parser.add_argument("--episodes-file", type=Path, required=True)
+    parser.add_argument("--answers-file", type=Path, required=True)
 
 
 def _add_shared_run_args(
@@ -86,6 +108,27 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "list-episodes":
         for episode in list_episodes():
             print(f"{episode.episode_id}\t{episode.title}")
+        return 0
+
+    if args.command == "verify-suite":
+        suite = load_sealed_suite(
+            args.episodes_file,
+            args.answers_file,
+            preregistration_path=args.preregistration,
+        )
+        print(
+            json.dumps(
+                {
+                    "suite_id": suite.suite_id,
+                    "episode_count": len(suite.episodes),
+                    "episodes_sha256": suite.episodes_sha256,
+                    "answers_sha256": suite.answers_sha256,
+                    "status": "verified",
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
         return 0
 
     _require_api_key()
@@ -127,6 +170,31 @@ def main(argv: list[str] | None = None) -> int:
         _write_json(args.output, payload)
         print(json.dumps(payload["summary"], indent=2, sort_keys=True))
         return 0
+
+
+    if args.command == "experiment":
+        payload = run_preregistered_experiment(
+            preregistration_path=args.preregistration,
+            episodes_path=args.episodes_file,
+            answers_path=args.answers_file,
+            output_path=args.output,
+            resume=args.resume,
+            progress=lambda message: print(message, file=sys.stderr),
+        )
+        print(
+            json.dumps(
+                {
+                    "status": payload["status"],
+                    "completed_runs": payload["completed_runs"],
+                    "planned_runs": payload["planned_runs"],
+                    "summary": payload["summary"],
+                    "claim_assessment": payload["claim_assessment"],
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0 if payload["status"] == "complete" else 3
 
     raise AssertionError(f"Unhandled command: {args.command}")
 

@@ -133,6 +133,28 @@ power-research-agent evaluate `
   --output outputs/benchmark.json
 ```
 
+For the one-time unseen evaluation, model-visible cases and the evaluator-only
+answer key are stored separately and kept out of Git until the run is frozen.
+The public preregistration contains only their hashes. The runner verifies those
+hashes before the first paid call and checkpoints every randomized run:
+
+```powershell
+power-research-agent verify-suite `
+  --preregistration experiments/001/preregistration.json `
+  --episodes-file private/sealed-energy-memory-001/episodes.json `
+  --answers-file private/sealed-energy-memory-001/answers.json
+
+power-research-agent experiment `
+  --preregistration experiments/001/preregistration.json `
+  --episodes-file private/sealed-energy-memory-001/episodes.json `
+  --answers-file private/sealed-energy-memory-001/answers.json `
+  --output outputs/experiment-001.json
+```
+
+The answer key and API key are both ignored. They are different controls: the
+answer key prevents evaluation leakage; the API key remains only in the process
+environment and is never written to a result file.
+
 Local, deterministic tests make no API calls:
 
 ```powershell

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 from conftest import FakeClient, function_call_response
 
 from power_research_agent.environment import ResearchEnvironment
@@ -70,6 +72,22 @@ def test_compaction_condition_adds_context_management() -> None:
         assert request["context_management"] == [
             {"type": "compaction", "compact_threshold": 175_000}
         ]
+
+
+def test_compaction_output_item_is_counted() -> None:
+    scripted = _scripted_unit_scale_run()
+    scripted[1].output.insert(0, SimpleNamespace(type="compaction"))
+    client = FakeClient(scripted)
+    environment = ResearchEnvironment(get_episode("unit-scale-shift"))
+    config = HarnessConfig(
+        mode=HarnessMode.RETAINED_REASONING_COMPACTION,
+        compact_threshold=1_000,
+    )
+
+    run = ResponsesHarness(config, client=client).run(environment)
+
+    assert run.report is not None
+    assert run.compaction_events == 1
 
 
 def test_stateless_condition_never_uses_native_continuation() -> None:

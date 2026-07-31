@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from power_research_agent.environment import ResearchEnvironment
 from power_research_agent.episodes import get_episode
-from power_research_agent.evaluation import benchmark_summary, score_run
+from power_research_agent.evaluation import (
+    benchmark_summary,
+    estimate_cost_usd,
+    paired_comparisons,
+    score_run,
+)
 from power_research_agent.models import RunResult, UsageTotals
 
 
@@ -127,3 +132,71 @@ def test_benchmark_summary_groups_conditions() -> None:
     assert summary["by_mode"]["retained-reasoning"]["mean_score"] == 75.0
     assert summary["by_mode"]["retained-reasoning"]["exact_success_rate"] == 0.5
     assert summary["by_mode"]["retained-reasoning"]["input_tokens"] == 220
+
+
+def test_cost_estimate_separates_cached_and_cache_write_tokens() -> None:
+    run = {
+        "usage": {
+            "input_tokens": 1_000,
+            "cached_input_tokens": 200,
+            "cache_write_tokens": 100,
+            "output_tokens": 300,
+        }
+    }
+    pricing = {
+        "input_per_million": 5.0,
+        "cached_input_per_million": 0.5,
+        "cache_write_per_million": 6.25,
+        "output_per_million": 30.0,
+    }
+
+    assert estimate_cost_usd(run, pricing) == 0.013225
+
+
+def test_paired_comparison_clusters_repeats_by_episode() -> None:
+    records = []
+    for episode_id, control_score, treatment_score in (
+        ("episode-a", 40.0, 90.0),
+        ("episode-b", 60.0, 100.0),
+    ):
+        for repeat_index in (1, 2):
+            for mode, score in (
+                ("stateless-truncated", control_score),
+                ("retained-reasoning", treatment_score),
+            ):
+                records.append(
+                    {
+                        "repeat_index": repeat_index,
+                        "run": {
+                            "episode_id": episode_id,
+                            "mode": mode,
+                            "usage": {
+                                "input_tokens": 100,
+                                "output_tokens": 20,
+                                "reasoning_tokens": 10,
+                            },
+                            "duration_seconds": 1.0,
+                        },
+                        "score": {"total": score, "exact_success": score == 100.0},
+                        "estimated_cost_usd": 0.01,
+                    }
+                )
+
+    result = paired_comparisons(
+        records,
+        [
+            {
+                "name": "retention",
+                "control": "stateless-truncated",
+                "treatment": "retained-reasoning",
+                "expected_pairs": 4,
+            }
+        ],
+        bootstrap_seed=7,
+        bootstrap_iterations=1_000,
+    )["retention"]
+
+    assert result["complete"] is True
+    assert result["paired_runs"] == 4
+    assert result["episodes"] == 2
+    assert result["metrics"]["score"]["delta"] == 45.0

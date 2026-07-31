@@ -16,6 +16,10 @@ build/
 # Generated benchmark outputs.
 outputs/
 
+# One-time sealed evaluation material. Only hashes and the preregistration are public
+# until the frozen experiment has completed.
+private/
+
 # Editor and operating-system files.
 .idea/
 .vscode/

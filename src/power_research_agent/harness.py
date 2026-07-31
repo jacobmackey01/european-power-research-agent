@@ -62,7 +62,9 @@ class ResponsesHarness:
         usage = UsageTotals()
         response_ids: list[str] = []
         response_models: list[str] = []
+        effective_reasoning_contexts: list[str] = []
         errors: list[str] = []
+        compaction_events = 0
         previous_response_id: str | None = None
         next_input: str | list[dict[str, Any]] = environment.episode.model_prompt()
 
@@ -84,6 +86,13 @@ class ResponsesHarness:
             response_model = _field(response, "model")
             if isinstance(response_model, str) and response_model not in response_models:
                 response_models.append(response_model)
+            reasoning_context = _field(_field(response, "reasoning"), "context")
+            if (
+                isinstance(reasoning_context, str)
+                and reasoning_context not in effective_reasoning_contexts
+            ):
+                effective_reasoning_contexts.append(reasoning_context)
+            compaction_events += _output_item_count(response, "compaction")
             _accumulate_usage(usage, _field(response, "usage"))
 
             calls = _function_calls(response)
@@ -152,6 +161,8 @@ class ResponsesHarness:
                 if self.config.mode == HarnessMode.RETAINED_REASONING_COMPACTION
                 else None
             ),
+            compaction_events=compaction_events,
+            effective_reasoning_contexts=effective_reasoning_contexts,
         )
 
     def _request(
@@ -213,6 +224,12 @@ def _function_calls(response: Any) -> list[dict[str, str]]:
         if all(isinstance(value, str) for value in (name, arguments, call_id)):
             calls.append({"name": name, "arguments": arguments, "call_id": call_id})
     return calls
+
+
+def _output_item_count(response: Any, item_type: str) -> int:
+    return sum(
+        _field(item, "type") == item_type for item in (_field(response, "output", []) or [])
+    )
 
 
 def _accumulate_usage(totals: UsageTotals, usage: Any) -> None:

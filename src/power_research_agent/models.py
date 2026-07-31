@@ -23,6 +23,10 @@ ROOT_CAUSES = (
     "dst_duplicate_local_hour",
     "unit_scale_shift_gw_as_mw",
     "regime_dependent_signal",
+    "timezone_alignment_error",
+    "forecast_vintage_leakage",
+    "structural_break",
+    "missing_not_at_random_outages",
     "insufficient_evidence",
 )
 
@@ -96,6 +100,8 @@ class RunResult:
     errors: list[str] = field(default_factory=list)
     duration_seconds: float = 0.0
     compact_threshold: int | None = None
+    compaction_events: int = 0
+    effective_reasoning_contexts: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return json_ready(self)

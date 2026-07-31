@@ -26,6 +26,13 @@ Change only the harness condition:
 2. retained reasoning;
 3. retained reasoning with compaction.
 
+The retention contrast and the compaction contrast answer different questions.
+`retained-reasoning` versus `stateless-truncated` estimates the value of preserving
+reasoning and the complete action history. `retained-reasoning-compaction` versus
+`retained-reasoning` estimates what happens when the retained state is compacted.
+They are reported separately; a combined win over the stateless baseline does not
+by itself prove that compaction added value.
+
 ## Score
 
 Each run receives up to 100 points:
@@ -73,6 +80,26 @@ Before publishing performance claims:
 5. execute the full run matrix without prompt edits between conditions;
 6. publish all runs, including failures.
 
+The experiment runner enforces this process by checking SHA-256 hashes before any
+API call, deriving a deterministic randomized run order from the registered seed,
+checkpointing every result, and refusing to resume against a different
+preregistration.
+
+## Repeated-run inference
+
+The episode is the independent evaluation unit. Repeated model runs are paired by
+episode, repeat, and harness condition; they are not treated as extra independent
+episodes. Report episode-clustered paired mean differences, a 95% bootstrap
+interval, and a two-sided episode-level sign-flip test. Freeze the bootstrap seed,
+iteration count, superiority margin, and any non-inferiority margin before viewing
+condition results.
+
+Compaction is testable only when the response stream contains at least one
+encrypted `compaction` output item. Sending `context_management` without crossing
+the threshold is a configuration check, not a compaction experiment. A deliberately
+low threshold must be labelled a forced-compaction stress test rather than a
+production long-context benchmark.
+
 ## Leakage safeguards
 
 - Tool output contains evidence, never an `expected_answer` field.
@@ -88,3 +115,7 @@ A short smoke test confirms that the SDK request shape and tool continuation
 work. It is not evidence that one harness is better. A small public development
 set can reveal failures and generate hypotheses. Only repeated runs on a frozen,
 unseen set support a comparative performance claim.
+
+Synthetic seeded episodes support a claim about this harness on those controlled
+failure modes. They do not establish live trading performance, real-market alpha,
+or a universal advantage for retained reasoning across unrelated workflows.
