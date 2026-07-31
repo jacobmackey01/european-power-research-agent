@@ -101,6 +101,11 @@ def _add_shared_run_args(
     parser.add_argument("--max-output-tokens", type=int, default=4096)
     parser.add_argument("--compact-threshold", type=int, default=200_000)
     parser.add_argument("--stateless-history-window", type=int, default=3)
+    parser.add_argument(
+        "--service-tier",
+        choices=("auto", "default", "flex"),
+        default="default",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -213,6 +218,7 @@ def _run_once(
         max_output_tokens=args.max_output_tokens,
         compact_threshold=args.compact_threshold,
         stateless_history_window=args.stateless_history_window,
+        service_tier=args.service_tier,
     )
     run = ResponsesHarness(config).run(environment)
     score = score_run(run, episode)

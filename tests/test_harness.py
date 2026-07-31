@@ -49,6 +49,7 @@ def test_retained_reasoning_continues_with_previous_response_id() -> None:
     assert requests[1]["previous_response_id"] == "resp-1"
     assert requests[2]["previous_response_id"] == "resp-2"
     assert all(request["reasoning"]["context"] == "all_turns" for request in requests)
+    assert all(request["service_tier"] == "default" for request in requests)
     assert all("context_management" not in request for request in requests)
     assert requests[1]["input"][0]["type"] == "function_call_output"
     assert run.usage.input_tokens == 30

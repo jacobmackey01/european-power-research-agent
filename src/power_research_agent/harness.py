@@ -31,6 +31,7 @@ class HarnessConfig:
     max_output_tokens: int = 4096
     compact_threshold: int = 200_000
     stateless_history_window: int = 3
+    service_tier: str = "default"
 
     def __post_init__(self) -> None:
         allowed_efforts = {"none", "low", "medium", "high", "xhigh", "max"}
@@ -44,6 +45,8 @@ class HarnessConfig:
             raise ValueError("compact_threshold must be at least 1,000 tokens.")
         if self.stateless_history_window < 1:
             raise ValueError("stateless_history_window must be positive.")
+        if self.service_tier not in {"auto", "default", "flex"}:
+            raise ValueError(f"Unsupported service tier: {self.service_tier}")
 
 
 class ResponsesHarness:
@@ -63,6 +66,7 @@ class ResponsesHarness:
         response_ids: list[str] = []
         response_models: list[str] = []
         effective_reasoning_contexts: list[str] = []
+        service_tiers: list[str] = []
         errors: list[str] = []
         compaction_events = 0
         previous_response_id: str | None = None
@@ -86,6 +90,9 @@ class ResponsesHarness:
             response_model = _field(response, "model")
             if isinstance(response_model, str) and response_model not in response_models:
                 response_models.append(response_model)
+            service_tier = _field(response, "service_tier")
+            if isinstance(service_tier, str) and service_tier not in service_tiers:
+                service_tiers.append(service_tier)
             reasoning_context = _field(_field(response, "reasoning"), "context")
             if (
                 isinstance(reasoning_context, str)
@@ -163,6 +170,7 @@ class ResponsesHarness:
             ),
             compaction_events=compaction_events,
             effective_reasoning_contexts=effective_reasoning_contexts,
+            service_tiers=service_tiers,
         )
 
     def _request(
@@ -184,6 +192,7 @@ class ResponsesHarness:
                 "context": "all_turns" if retained else "current_turn",
             },
             "max_output_tokens": self.config.max_output_tokens,
+            "service_tier": self.config.service_tier,
             "store": True,
             "metadata": {
                 "project": "european-power-research-agent",

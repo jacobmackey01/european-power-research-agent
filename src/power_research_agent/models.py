@@ -102,6 +102,7 @@ class RunResult:
     compact_threshold: int | None = None
     compaction_events: int = 0
     effective_reasoning_contexts: list[str] = field(default_factory=list)
+    service_tiers: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return json_ready(self)

@@ -71,9 +71,20 @@ def run_preregistered_experiment(
 
     episode_by_id = {episode.episode_id: episode for episode in suite.episodes}
     fatal_error: str | None = None
+    budget_stopped = False
     for job in jobs:
         if job.job_id in completed_ids:
             continue
+        if _budget_guard_reached(payload, manifest):
+            payload["status"] = "interrupted"
+            payload["interruption_reason"] = (
+                "The preregistered client-side estimated-cost guard stopped before "
+                "the next paid run. The incomplete matrix cannot support a claim."
+            )
+            payload["updated_utc"] = _utc_now()
+            _atomic_write_json(output_path, payload)
+            budget_stopped = True
+            break
         progress(
             f"[{job.execution_order}/{len(jobs)}] {job.episode_id} | "
             f"repeat {job.repeat_index} | {job.mode.value}"
@@ -107,7 +118,7 @@ def run_preregistered_experiment(
             _atomic_write_json(output_path, payload)
             break
 
-    if fatal_error is None and len(payload["records"]) == len(jobs):
+    if fatal_error is None and not budget_stopped and len(payload["records"]) == len(jobs):
         payload["status"] = "complete"
         payload["completed_utc"] = _utc_now()
         payload.pop("interruption_reason", None)
@@ -217,6 +228,7 @@ def _initial_payload(
         "completed_runs": 0,
         "run_matrix": manifest["run_matrix"],
         "pricing": manifest["pricing"],
+        "budget": manifest.get("budget", {}),
         "records": [],
         "summary": {"runs": 0, "by_mode": {}},
         "comparisons": {},
@@ -255,6 +267,7 @@ def _harness_config(manifest: dict[str, Any], mode: HarnessMode) -> HarnessConfi
         max_output_tokens=int(matrix["max_output_tokens"]),
         compact_threshold=int(matrix["compact_threshold"]),
         stateless_history_window=int(matrix["stateless_history_window"]),
+        service_tier=str(matrix["service_tier"]),
     )
 
 
@@ -277,6 +290,16 @@ def _fatal_api_error(errors: list[str]) -> str | None:
         "RateLimitError",
     )
     return next((error for error in errors if error.startswith(fatal_names)), None)
+
+
+def _budget_guard_reached(payload: dict[str, Any], manifest: dict[str, Any]) -> bool:
+    budget = manifest.get("budget")
+    if not isinstance(budget, dict):
+        return False
+    maximum = float(budget["max_estimated_cost_usd"])
+    next_run_reserve = float(budget["next_run_reserve_usd"])
+    spent = sum(float(record.get("estimated_cost_usd", 0.0)) for record in payload["records"])
+    return spent + next_run_reserve > maximum
 
 
 def _job_id(manifest_hash: str, episode_id: str, repeat_index: int, mode: str) -> str:
