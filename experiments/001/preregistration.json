@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "experiment_id": "sol-memory-compaction-001",
+  "registered_utc": "2026-07-31T12:31:06Z",
+  "research_question": "On sealed synthetic European power-market investigations that require evidence from five sequential audit gates, does retained Responses API reasoning improve decision quality over a stateless rolling history, and does forced compaction preserve retained-state quality with fewer output tokens?",
+  "harness_commit": "a1f00459122158583ee9aad945d39cc5f0b59e4d",
+  "artifacts": {
+    "suite_id": "sealed-energy-memory-001",
+    "episode_count": 8,
+    "episodes_sha256": "6a788a2d9e5f9d75cb5894d101bca8a34d76ecb434eae837ce47aed8f2b8678f",
+    "answers_sha256": "55bc8d28751abe0049b9e91aacd05622cd27f952abc9d8688f66d1c7fdc5859c",
+    "pre_run_disclosure": "Only hashes are committed before execution. Model-visible cases and evaluator-only labels remain in the ignored private directory.",
+    "post_run_disclosure": "After all results are frozen, publish the exact cases, answer key, and complete run records so the first evaluation is auditable but cannot be reused as an unseen set."
+  },
+  "run_matrix": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "max",
+    "service_tier": "default",
+    "modes": [
+      "stateless-truncated",
+      "retained-reasoning",
+      "retained-reasoning-compaction"
+    ],
+    "repetitions": 2,
+    "randomization_seed": 56073101,
+    "max_steps": 8,
+    "max_output_tokens": 4096,
+    "stateless_history_window": 3,
+    "compact_threshold": 1000,
+    "planned_runs": 48,
+    "temperature": "not sent; unsupported for this model configuration"
+  },
+  "calibration": {
+    "set": "public development episode regime-dependent-signal; excluded from the sealed analysis",
+    "effort": "max",
+    "thresholds_tested": [4000, 2000, 1000],
+    "first_threshold_with_observed_compaction_item": 1000,
+    "interpretation": "The compaction condition is a deliberately forced short-context stress test. It is not evidence about a normal 200,000-token production threshold."
+  },
+  "comparisons": [
+    {
+      "name": "retention_vs_stateless",
+      "control": "stateless-truncated",
+      "treatment": "retained-reasoning"
+    },
+    {
+      "name": "compaction_vs_retained",
+      "control": "retained-reasoning",
+      "treatment": "retained-reasoning-compaction"
+    },
+    {
+      "name": "combined_vs_stateless",
+      "control": "stateless-truncated",
+      "treatment": "retained-reasoning-compaction"
+    }
+  ],
+  "analysis": {
+    "independent_unit": "episode",
+    "pairing_keys": ["episode_id", "repeat_index"],
+    "repeat_handling": "Average paired repeat-level values within episode before inference.",
+    "confidence_interval": "episode-clustered paired bootstrap percentile interval",
+    "bootstrap_seed": 56073102,
+    "bootstrap_iterations": 20000,
+    "hypothesis_test": "two-sided exact episode-level sign-flip test when at most 20 nonzero episode deltas",
+    "primary_metric": "composite score out of 100",
+    "secondary_metrics": [
+      "exact success",
+      "input tokens",
+      "output tokens including reasoning",
+      "reasoning tokens",
+      "duration",
+      "estimated cost",
+      "compaction activation"
+    ]
+  },
+  "claim_rules": [
+    {
+      "name": "retention_improves_composite_score",
+      "comparison": "retention_vs_stateless",
+      "metric": "score",
+      "kind": "superiority",
+      "margin": 0.0,
+      "alpha": 0.05,
+      "role": "primary"
+    },
+    {
+      "name": "retention_improves_exact_success",
+      "comparison": "retention_vs_stateless",
+      "metric": "exact_success",
+      "kind": "superiority",
+      "margin": 0.0,
+      "alpha": 0.05,
+      "role": "secondary"
+    },
+    {
+      "name": "forced_compaction_preserves_quality",
+      "comparison": "compaction_vs_retained",
+      "metric": "score",
+      "kind": "noninferiority",
+      "margin": 5.0,
+      "requires_compaction": true,
+      "minimum_compaction_activation_rate": 0.8,
+      "role": "secondary_stress_test"
+    },
+    {
+      "name": "forced_compaction_reduces_output_tokens",
+      "comparison": "compaction_vs_retained",
+      "metric": "output_tokens",
+      "kind": "reduction",
+      "margin": 0.0,
+      "requires_compaction": true,
+      "minimum_compaction_activation_rate": 0.8,
+      "role": "secondary_stress_test"
+    },
+    {
+      "name": "combined_harness_improves_composite_score",
+      "comparison": "combined_vs_stateless",
+      "metric": "score",
+      "kind": "superiority",
+      "margin": 0.0,
+      "alpha": 0.05,
+      "role": "secondary"
+    }
+  ],
+  "pricing": {
+    "snapshot_date": "2026-07-31",
+    "currency": "USD",
+    "service_tier": "default",
+    "context_band": "standard short context",
+    "input_per_million": 5.0,
+    "cached_input_per_million": 0.5,
+    "cache_write_per_million": 6.25,
+    "output_per_million": 30.0,
+    "source": "https://developers.openai.com/api/docs/pricing"
+  },
+  "budget": {
+    "max_estimated_cost_usd": 4.5,
+    "next_run_reserve_usd": 0.12,
+    "rule": "Before each paid job, stop if recorded estimated spend plus the next-run reserve would exceed the cap. An incomplete matrix is not claim-supporting."
+  },
+  "interpretation_limits": [
+    "The eight cases are synthetic seeded investigations, not live trading data and not evidence of market alpha.",
+    "The set stresses the exact failure mode under study: final decisions require evidence older than the stateless three-action window.",
+    "The 1,000-token threshold is a forced-compaction test selected on an excluded public development case.",
+    "The gpt-5.6-sol alias is recorded rather than a dated model snapshot because no dated Sol snapshot was selected; response model IDs are retained.",
+    "Only the primary composite-score contrast is treated as confirmatory; other rules are secondary and reported without selective omission."
+  ]
+}
